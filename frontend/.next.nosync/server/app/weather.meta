@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/weather/layout,_N_T_/weather/page,_N_T_/weather"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/weather/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/5a3013bc084cd28694c8c6ea4abe3952037c9eba3849d95657fcd261b23f7948/$/weather",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/weather/page"
+    },
+    "isFallback": false
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/add-dress/page": "app/add-dress/page.js",
+  "/add_dress/page": "app/add_dress/page.js",
+  "/ai-assistant/page": "app/ai-assistant/page.js",
+  "/check-before-you-buy/page": "app/check-before-you-buy/page.js",
+  "/collection/page": "app/collection/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/home/page": "app/home/page.js",
+  "/login/page": "app/login/page.js",
+  "/my-model/page": "app/my-model/page.js",
+  "/outfit-planner/page": "app/outfit-planner/page.js",
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/register/page": "app/register/page.js",
+  "/scan-and-find/page": "app/scan-and-find/page.js",
+  "/smart-match/page": "app/smart-match/page.js",
+  "/weather/page": "app/weather/page.js"
+}

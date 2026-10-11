@@ -1,5 +1,9 @@
 import { BodyProfile } from '../types';
-import { INITIAL_BODY_PROFILE } from '../mock/bodyProfile';
+import {
+  INITIAL_BODY_PROFILE,
+  DEFAULT_BODY_3D_PARAMS,
+  DEFAULT_APPEARANCE_3D_PARAMS,
+} from '../mock/bodyProfile';
 
 const MODEL_PROFILE_STORAGE_KEY = 'collection_it_all_body_model_v2';
 
@@ -35,9 +39,21 @@ export const modelService = {
     const updated: BodyProfile = {
       ...current,
       ...profile,
+      modelPreset: profile.modelPreset || profile.body3D?.modelPreset || current.modelPreset || 'procedural-female',
+      customModelUrl: profile.customModelUrl !== undefined ? profile.customModelUrl : (profile.body3D?.customModelUrl !== undefined ? profile.body3D.customModelUrl : current.customModelUrl),
+      customModelName: profile.customModelName !== undefined ? profile.customModelName : (profile.body3D?.customModelName !== undefined ? profile.body3D.customModelName : current.customModelName),
+      body3D: {
+        ...(current.body3D || DEFAULT_BODY_3D_PARAMS),
+        ...(profile.body3D || {}),
+        modelPreset: profile.modelPreset || profile.body3D?.modelPreset || current.body3D?.modelPreset || 'procedural-female',
+      },
       appearance: {
         ...current.appearance,
         ...(profile.appearance || {}),
+      },
+      appearance3D: {
+        ...(current.appearance3D || DEFAULT_APPEARANCE_3D_PARAMS),
+        ...(profile.appearance3D || {}),
       },
       usualSizes: {
         ...current.usualSizes,

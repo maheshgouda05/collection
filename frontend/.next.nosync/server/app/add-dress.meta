@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/add-dress/layout,_N_T_/add-dress/page,_N_T_/add-dress"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/add-dress/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/e8f61bfec2631da42635b1db1c33b81fa3ab5f3cb4679e800cc94f19e25011ec/$/add-dress",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/add-dress/page"
+    },
+    "isFallback": false
+  }
+}
