@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useWardrobe } from '@/lib/wardrobeContext';
 import { Category, WardrobeItem } from '@/lib/types';
 import {
@@ -37,9 +38,16 @@ const CATEGORIES: ('All' | Category)[] = [
 ];
 
 export default function DashboardPage() {
-  const { items, savedOutfits, toggleFavorite, deleteItem, bodyProfile } = useWardrobe();
+  const router = useRouter();
+  const { items, savedOutfits, toggleFavorite, deleteItem, bodyProfile, authSession, isLoaded } = useWardrobe();
   const [activeCategory, setActiveCategory] = useState<'All' | Category>('All');
   const [selectedItemForModal, setSelectedItemForModal] = useState<WardrobeItem | null>(null);
+
+  useEffect(() => {
+    if (isLoaded && !authSession.isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isLoaded, authSession.isAuthenticated, router]);
 
   const filteredItems =
     activeCategory === 'All'

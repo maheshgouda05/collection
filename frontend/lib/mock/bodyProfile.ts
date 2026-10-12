@@ -100,13 +100,7 @@ export const INITIAL_BODY_PROFILE: BodyProfile = {
 };
 
 export const INITIAL_AUTH_SESSION: AuthSession = {
-  isAuthenticated: true, // Default to demo session for instant exploration
-  user: {
-    id: 'usr_demo_01',
-    name: 'Elena Rostova',
-    email: 'elena@collectionitall.com',
-    username: 'elena_style',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
-  },
-  rememberMe: true,
+  isAuthenticated: false,
+  user: null,
+  rememberMe: false,
 };

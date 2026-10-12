@@ -1140,6 +1140,9 @@ export default function CollectionPage() {
               <button
                 onClick={() => {
                   deleteItem(itemToDelete.id);
+                  if (activeItemModal?.id === itemToDelete.id) {
+                    setActiveItemModal(null);
+                  }
                   setItemToDelete(null);
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-md cursor-pointer"

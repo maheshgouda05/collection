@@ -300,17 +300,29 @@ export default function MyModelPage() {
             <div className="space-y-4">
               {/* 1. Height */}
               <div
-                className={`p-3.5 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   focusedField === 'height'
                     ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500/20'
                     : 'border-neutral-200 bg-neutral-50/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-neutral-800">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMeasurement('height')}
+                    className="text-left text-xs font-bold text-neutral-800 hover:text-rose-600 transition cursor-pointer"
+                  >
                     Height <span className="text-[11px] font-normal text-neutral-500">(cm)</span>
-                  </label>
-                  <div className="flex items-center gap-1.5">
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setHeightCm((prev) => Math.max(130, (prev || 175) - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Decrease Height"
+                    >
+                      -
+                    </button>
                     <input
                       ref={(el) => {
                         inputsRef.current.height = el;
@@ -321,39 +333,61 @@ export default function MyModelPage() {
                       value={heightCm || ''}
                       placeholder="175"
                       onChange={(e) => setHeightCm(Number(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-right focus:border-rose-500 focus:outline-none"
+                      className="w-16 px-2 py-1.5 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-center focus:border-rose-500 focus:outline-none"
                     />
-                    <span className="text-xs font-medium text-neutral-500">cm</span>
+                    <button
+                      type="button"
+                      onClick={() => setHeightCm((prev) => Math.min(220, (prev || 175) + 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Increase Height"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-medium text-neutral-500 ml-1">cm</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={130}
-                  max={220}
-                  value={heightCm || 175}
-                  onChange={(e) => setHeightCm(Number(e.target.value))}
-                  className="w-full accent-rose-500 cursor-pointer"
-                />
+                <div className="py-1">
+                  <input
+                    type="range"
+                    min={130}
+                    max={220}
+                    value={heightCm || 175}
+                    onChange={(e) => setHeightCm(Number(e.target.value))}
+                    className="w-full accent-rose-500 cursor-pointer touch-manipulation"
+                  />
+                </div>
                 <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
                   <span>130 cm</span>
-                  <span className="font-semibold text-neutral-500">Example: 175 cm</span>
+                  <span className="font-semibold text-neutral-500">Default: 175 cm</span>
                   <span>220 cm</span>
                 </div>
               </div>
 
               {/* 2. Weight */}
               <div
-                className={`p-3.5 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   focusedField === 'weight'
                     ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500/20'
                     : 'border-neutral-200 bg-neutral-50/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-neutral-800">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMeasurement('weight')}
+                    className="text-left text-xs font-bold text-neutral-800 hover:text-rose-600 transition cursor-pointer"
+                  >
                     Weight <span className="text-[11px] font-normal text-neutral-500">(kg)</span>
-                  </label>
-                  <div className="flex items-center gap-1.5">
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setWeightKg((prev) => Math.max(35, (prev || 68) - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Decrease Weight"
+                    >
+                      -
+                    </button>
                     <input
                       ref={(el) => {
                         inputsRef.current.weight = el;
@@ -364,40 +398,62 @@ export default function MyModelPage() {
                       value={weightKg || ''}
                       placeholder="68"
                       onChange={(e) => setWeightKg(Number(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-right focus:border-rose-500 focus:outline-none"
+                      className="w-16 px-2 py-1.5 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-center focus:border-rose-500 focus:outline-none"
                     />
-                    <span className="text-xs font-medium text-neutral-500">kg</span>
+                    <button
+                      type="button"
+                      onClick={() => setWeightKg((prev) => Math.min(150, (prev || 68) + 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Increase Weight"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-medium text-neutral-500 ml-1">kg</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={35}
-                  max={150}
-                  value={weightKg || 68}
-                  onChange={(e) => setWeightKg(Number(e.target.value))}
-                  className="w-full accent-rose-500 cursor-pointer"
-                />
+                <div className="py-1">
+                  <input
+                    type="range"
+                    min={35}
+                    max={150}
+                    value={weightKg || 68}
+                    onChange={(e) => setWeightKg(Number(e.target.value))}
+                    className="w-full accent-rose-500 cursor-pointer touch-manipulation"
+                  />
+                </div>
                 <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
                   <span>35 kg</span>
-                  <span className="font-semibold text-neutral-500">Example: 68 kg</span>
+                  <span className="font-semibold text-neutral-500">Default: 68 kg</span>
                   <span>150 kg</span>
                 </div>
               </div>
 
               {/* 3. Chest Circumference */}
               <div
-                className={`p-3.5 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   focusedField === 'chest'
                     ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500/20'
                     : 'border-neutral-200 bg-neutral-50/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-neutral-800">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMeasurement('chest')}
+                    className="text-left text-xs font-bold text-neutral-800 hover:text-rose-600 transition cursor-pointer"
+                  >
                     Chest Circumference{' '}
                     <span className="text-[11px] font-normal text-neutral-500">(cm)</span>
-                  </label>
-                  <div className="flex items-center gap-1.5">
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setChestCm((prev) => Math.max(65, (prev || 96) - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Decrease Chest"
+                    >
+                      -
+                    </button>
                     <input
                       ref={(el) => {
                         inputsRef.current.chest = el;
@@ -408,23 +464,33 @@ export default function MyModelPage() {
                       value={chestCm || ''}
                       placeholder="96"
                       onChange={(e) => setChestCm(Number(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-right focus:border-rose-500 focus:outline-none"
+                      className="w-16 px-2 py-1.5 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-center focus:border-rose-500 focus:outline-none"
                     />
-                    <span className="text-xs font-medium text-neutral-500">cm</span>
+                    <button
+                      type="button"
+                      onClick={() => setChestCm((prev) => Math.min(145, (prev || 96) + 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Increase Chest"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-medium text-neutral-500 ml-1">cm</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={65}
-                  max={145}
-                  value={chestCm || 96}
-                  onChange={(e) => setChestCm(Number(e.target.value))}
-                  className="w-full accent-rose-500 cursor-pointer"
-                />
+                <div className="py-1">
+                  <input
+                    type="range"
+                    min={65}
+                    max={145}
+                    value={chestCm || 96}
+                    onChange={(e) => setChestCm(Number(e.target.value))}
+                    className="w-full accent-rose-500 cursor-pointer touch-manipulation"
+                  />
+                </div>
                 <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
                   <span>65 cm</span>
                   <span className="font-semibold text-neutral-500">
-                    Example: 96 cm (Around widest chest)
+                    Around widest chest: 96 cm
                   </span>
                   <span>145 cm</span>
                 </div>
@@ -432,18 +498,30 @@ export default function MyModelPage() {
 
               {/* 4. Biceps Circumference */}
               <div
-                className={`p-3.5 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   focusedField === 'biceps'
                     ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500/20'
                     : 'border-neutral-200 bg-neutral-50/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-neutral-800">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMeasurement('biceps')}
+                    className="text-left text-xs font-bold text-neutral-800 hover:text-rose-600 transition cursor-pointer"
+                  >
                     Biceps Circumference{' '}
                     <span className="text-[11px] font-normal text-neutral-500">(cm)</span>
-                  </label>
-                  <div className="flex items-center gap-1.5">
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setBicepsCm((prev) => Math.max(18, (prev || 32) - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Decrease Biceps"
+                    >
+                      -
+                    </button>
                     <input
                       ref={(el) => {
                         inputsRef.current.biceps = el;
@@ -454,23 +532,33 @@ export default function MyModelPage() {
                       value={bicepsCm || ''}
                       placeholder="32"
                       onChange={(e) => setBicepsCm(Number(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-right focus:border-rose-500 focus:outline-none"
+                      className="w-16 px-2 py-1.5 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-center focus:border-rose-500 focus:outline-none"
                     />
-                    <span className="text-xs font-medium text-neutral-500">cm</span>
+                    <button
+                      type="button"
+                      onClick={() => setBicepsCm((prev) => Math.min(55, (prev || 32) + 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Increase Biceps"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-medium text-neutral-500 ml-1">cm</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={18}
-                  max={55}
-                  value={bicepsCm || 32}
-                  onChange={(e) => setBicepsCm(Number(e.target.value))}
-                  className="w-full accent-rose-500 cursor-pointer"
-                />
+                <div className="py-1">
+                  <input
+                    type="range"
+                    min={18}
+                    max={55}
+                    value={bicepsCm || 32}
+                    onChange={(e) => setBicepsCm(Number(e.target.value))}
+                    className="w-full accent-rose-500 cursor-pointer touch-manipulation"
+                  />
+                </div>
                 <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
                   <span>18 cm</span>
                   <span className="font-semibold text-neutral-500">
-                    Example: 32 cm (Upper arm thickness)
+                    Upper arm: 32 cm
                   </span>
                   <span>55 cm</span>
                 </div>
@@ -478,18 +566,30 @@ export default function MyModelPage() {
 
               {/* 5. Wrist Circumference */}
               <div
-                className={`p-3.5 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   focusedField === 'wrist'
                     ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500/20'
                     : 'border-neutral-200 bg-neutral-50/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-neutral-800">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMeasurement('wrist')}
+                    className="text-left text-xs font-bold text-neutral-800 hover:text-rose-600 transition cursor-pointer"
+                  >
                     Wrist Circumference{' '}
                     <span className="text-[11px] font-normal text-neutral-500">(cm)</span>
-                  </label>
-                  <div className="flex items-center gap-1.5">
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setWristCm((prev) => Math.max(12, (prev || 17) - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Decrease Wrist"
+                    >
+                      -
+                    </button>
                     <input
                       ref={(el) => {
                         inputsRef.current.wrist = el;
@@ -500,23 +600,33 @@ export default function MyModelPage() {
                       value={wristCm || ''}
                       placeholder="17"
                       onChange={(e) => setWristCm(Number(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-right focus:border-rose-500 focus:outline-none"
+                      className="w-16 px-2 py-1.5 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-center focus:border-rose-500 focus:outline-none"
                     />
-                    <span className="text-xs font-medium text-neutral-500">cm</span>
+                    <button
+                      type="button"
+                      onClick={() => setWristCm((prev) => Math.min(26, (prev || 17) + 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Increase Wrist"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-medium text-neutral-500 ml-1">cm</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={12}
-                  max={26}
-                  value={wristCm || 17}
-                  onChange={(e) => setWristCm(Number(e.target.value))}
-                  className="w-full accent-rose-500 cursor-pointer"
-                />
+                <div className="py-1">
+                  <input
+                    type="range"
+                    min={12}
+                    max={26}
+                    value={wristCm || 17}
+                    onChange={(e) => setWristCm(Number(e.target.value))}
+                    className="w-full accent-rose-500 cursor-pointer touch-manipulation"
+                  />
+                </div>
                 <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
                   <span>12 cm</span>
                   <span className="font-semibold text-neutral-500">
-                    Example: 17 cm (Forearm & wrist taper)
+                    Forearm & wrist: 17 cm
                   </span>
                   <span>26 cm</span>
                 </div>
@@ -524,18 +634,30 @@ export default function MyModelPage() {
 
               {/* 6. Shoulder-to-Shoulder Width */}
               <div
-                className={`p-3.5 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all ${
                   focusedField === 'shoulders'
                     ? 'border-rose-500 bg-rose-50/30 ring-1 ring-rose-500/20'
                     : 'border-neutral-200 bg-neutral-50/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-neutral-800">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMeasurement('shoulders')}
+                    className="text-left text-xs font-bold text-neutral-800 hover:text-rose-600 transition cursor-pointer"
+                  >
                     Shoulder-to-Shoulder Width{' '}
                     <span className="text-[11px] font-normal text-neutral-500">(cm)</span>
-                  </label>
-                  <div className="flex items-center gap-1.5">
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setShouldersCm((prev) => Math.max(30, (prev || 44) - 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Decrease Shoulders"
+                    >
+                      -
+                    </button>
                     <input
                       ref={(el) => {
                         inputsRef.current.shoulders = el;
@@ -546,23 +668,33 @@ export default function MyModelPage() {
                       value={shouldersCm || ''}
                       placeholder="44"
                       onChange={(e) => setShouldersCm(Number(e.target.value) || 0)}
-                      className="w-16 px-2 py-1 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-right focus:border-rose-500 focus:outline-none"
+                      className="w-16 px-2 py-1.5 bg-white border border-neutral-300 rounded-lg text-xs font-bold text-neutral-900 text-center focus:border-rose-500 focus:outline-none"
                     />
-                    <span className="text-xs font-medium text-neutral-500">cm</span>
+                    <button
+                      type="button"
+                      onClick={() => setShouldersCm((prev) => Math.min(62, (prev || 44) + 1))}
+                      className="w-8 h-8 rounded-lg bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 flex items-center justify-center font-bold text-sm touch-manipulation cursor-pointer active:scale-95 shadow-xs"
+                      aria-label="Increase Shoulders"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs font-medium text-neutral-500 ml-1">cm</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min={30}
-                  max={62}
-                  value={shouldersCm || 44}
-                  onChange={(e) => setShouldersCm(Number(e.target.value))}
-                  className="w-full accent-rose-500 cursor-pointer"
-                />
+                <div className="py-1">
+                  <input
+                    type="range"
+                    min={30}
+                    max={62}
+                    value={shouldersCm || 44}
+                    onChange={(e) => setShouldersCm(Number(e.target.value))}
+                    className="w-full accent-rose-500 cursor-pointer touch-manipulation"
+                  />
+                </div>
                 <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
                   <span>30 cm</span>
                   <span className="font-semibold text-neutral-500">
-                    Example: 44 cm (Tip of left to right shoulder)
+                    Shoulder span: 44 cm
                   </span>
                   <span>62 cm</span>
                 </div>

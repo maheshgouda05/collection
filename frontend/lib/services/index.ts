@@ -5,5 +5,6 @@ export * from './matcherService';
 export * from './weatherService';
 export * from './shoppingService';
 export * from './assistantService';
+export * from './profileService';
 export * from './tryOnService';
 export * from './apiClient';

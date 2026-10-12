@@ -18,6 +18,7 @@ import { authService } from './services/authService';
 import { modelService } from './services/modelService';
 import { matcherService } from './services/matcherService';
 import { collectionService } from './services/collectionService';
+import { profileService } from './services/profileService';
 
 interface WardrobeContextType {
   items: WardrobeItem[];
@@ -44,7 +45,7 @@ interface WardrobeContextType {
   // Outfits
   saveOutfit: (outfit: Outfit) => void;
   deleteOutfit: (id: string) => void;
-  updateProfile: (profile: Partial<UserProfile>) => void;
+  updateProfile: (profile: Partial<UserProfile>) => Promise<{ success: boolean; profile?: UserProfile; message?: string; error?: string } | void>;
   addScanRecord: (record: Omit<ScanRecord, 'id' | 'timestamp'>) => ScanRecord;
   checkShoppingItem: (candidate: {
     name: string;
@@ -123,6 +124,12 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
         setSavedOutfits(serverLooks);
       }
     }).catch((e) => console.warn('Server outfits sync error:', e));
+
+    profileService.getProfile().then((serverProfile) => {
+      if (serverProfile) {
+        setUserProfile(serverProfile);
+      }
+    }).catch((e) => console.warn('Server profile sync error:', e));
   }, []);
 
   const showToast = useCallback((msg: string) => {
@@ -226,6 +233,11 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
       user: null,
       rememberMe: false,
     });
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_STORAGE_AUTH_KEY);
+      localStorage.removeItem('collection_it_all_auth_session');
+      localStorage.removeItem('collection_it_all_auth_session_v2');
+    }
     showToast('You have been signed out.');
   };
 
@@ -296,7 +308,14 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
 
     setItems((prev) => [newItem, ...prev]);
     showToast(`Added "${newItem.name}" to your collection!`);
-    collectionService.create(newItem).catch((e) => console.warn('Backend item save error:', e));
+    collectionService
+      .create(newItem)
+      .then((serverCreated) => {
+        if (serverCreated) {
+          setItems((prev) => prev.map((item) => (item.id === newItem.id ? serverCreated : item)));
+        }
+      })
+      .catch((e) => console.warn('Backend item save error:', e));
     return newItem;
   };
 
@@ -345,9 +364,18 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
     matcherService.removeFavourite(id).catch((e) => console.warn('Backend outfit delete error:', e));
   };
 
-  const updateProfile = (profileUpdate: Partial<UserProfile>) => {
+  const updateProfile = async (profileUpdate: Partial<UserProfile>) => {
     setUserProfile((prev) => ({ ...prev, ...profileUpdate }));
-    showToast('Style profile preferences updated');
+    try {
+      const res = await profileService.updateProfile(profileUpdate);
+      if (res.success && res.profile) {
+        setUserProfile(res.profile);
+      }
+      return res;
+    } catch (e) {
+      console.warn('Backend updateProfile error:', e);
+      return { success: false, error: 'Could not update profile' };
+    }
   };
 
   const addScanRecord = (record: Omit<ScanRecord, 'id' | 'timestamp'>) => {

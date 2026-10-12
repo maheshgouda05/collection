@@ -195,23 +195,30 @@ export const dbService = {
 
   updateProfile(userId: string, data: Partial<Profile>): Profile | null {
     const db = loadDb();
-    const index = db.profiles.findIndex(p => p.id === userId);
-    if (index === -1) return null;
+    let index = db.profiles.findIndex(p => p.id === userId || (p as unknown as { userId: string }).userId === userId);
+    if (index === -1) {
+      const ensured = this.getProfile(userId);
+      if (!ensured) return null;
+      const reloadedDb = loadDb();
+      index = reloadedDb.profiles.findIndex(p => p.id === userId || (p as unknown as { userId: string }).userId === userId);
+      if (index === -1) return null;
+    }
+    const targetDb = loadDb();
     const updated: Profile = {
-      ...db.profiles[index],
+      ...targetDb.profiles[index],
       ...data,
       id: userId,
       updatedAt: new Date().toISOString(),
     };
-    db.profiles[index] = updated;
+    targetDb.profiles[index] = updated;
     // sync user table
-    const uIndex = db.users.findIndex(u => u.id === userId);
+    const uIndex = targetDb.users.findIndex(u => u.id === userId);
     if (uIndex !== -1) {
-      if (data.fullName) db.users[uIndex].fullName = data.fullName;
-      if (data.username) db.users[uIndex].username = data.username;
-      if (data.avatarUrl !== undefined) db.users[uIndex].avatarUrl = data.avatarUrl;
+      if (data.fullName) targetDb.users[uIndex].fullName = data.fullName;
+      if (data.username) targetDb.users[uIndex].username = data.username;
+      if (data.avatarUrl !== undefined) targetDb.users[uIndex].avatarUrl = data.avatarUrl;
     }
-    saveDb(db);
+    saveDb(targetDb);
     return updated;
   },
 
@@ -311,11 +318,11 @@ export const dbService = {
     return item || null;
   },
 
-  addWardrobeItem(userId: string, data: Partial<WardrobeItem> & { name: string; category: WardrobeItem['category']; colour: string; size: string; imageUrl: string; itemCode?: string }): WardrobeItem {
+  addWardrobeItem(userId: string, data: Partial<WardrobeItem> & { name: string; category: WardrobeItem['category']; colour: string; size: string; imageUrl: string; itemCode?: string; id?: string }): WardrobeItem {
     const db = loadDb();
     const now = new Date().toISOString();
     const newItem: WardrobeItem = {
-      id: crypto.randomUUID(),
+      id: data.id || crypto.randomUUID(),
       userId,
       itemCode: data.itemCode || generateItemCode(),
       name: data.name,
@@ -346,12 +353,13 @@ export const dbService = {
 
   updateWardrobeItem(userId: string, itemId: string, data: Partial<WardrobeItem>): WardrobeItem | null {
     const db = loadDb();
-    const index = db.wardrobe_items.findIndex(i => i.id === itemId && i.userId === userId);
+    const index = db.wardrobe_items.findIndex(i => (i.id === itemId || i.itemCode === itemId) && i.userId === userId);
     if (index === -1) return null;
+    const existing = db.wardrobe_items[index];
     const updated: WardrobeItem = {
-      ...db.wardrobe_items[index],
+      ...existing,
       ...data,
-      id: itemId,
+      id: existing.id,
       userId,
       updatedAt: new Date().toISOString(),
     };
@@ -363,7 +371,7 @@ export const dbService = {
   deleteWardrobeItem(userId: string, itemId: string): boolean {
     const db = loadDb();
     const initialLen = db.wardrobe_items.length;
-    db.wardrobe_items = db.wardrobe_items.filter(i => !(i.id === itemId && i.userId === userId));
+    db.wardrobe_items = db.wardrobe_items.filter(i => !((i.id === itemId || i.itemCode === itemId) && i.userId === userId));
     if (db.wardrobe_items.length < initialLen) {
       saveDb(db);
       return true;
@@ -373,7 +381,7 @@ export const dbService = {
 
   toggleFavourite(userId: string, itemId: string): WardrobeItem | null {
     const db = loadDb();
-    const item = db.wardrobe_items.find(i => i.id === itemId && i.userId === userId);
+    const item = db.wardrobe_items.find(i => (i.id === itemId || i.itemCode === itemId) && i.userId === userId);
     if (!item) return null;
     item.isFavourite = !item.isFavourite;
     item.updatedAt = new Date().toISOString();
@@ -383,7 +391,7 @@ export const dbService = {
 
   recordItemWorn(userId: string, itemId: string): WardrobeItem | null {
     const db = loadDb();
-    const item = db.wardrobe_items.find(i => i.id === itemId && i.userId === userId);
+    const item = db.wardrobe_items.find(i => (i.id === itemId || i.itemCode === itemId) && i.userId === userId);
     if (!item) return null;
     item.timesWorn = (item.timesWorn || 0) + 1;
     item.lastWornAt = new Date().toISOString();

@@ -35,6 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     userProfile,
     activeToast,
     authSession,
+    isLoaded,
     logout,
     login,
   } = useWardrobe();
@@ -72,6 +73,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isAuthPage = pathname === '/login' || pathname === '/register';
 
+  // Automatically redirect unauthenticated users away from protected pages to /login
+  useEffect(() => {
+    if (isLoaded && !authSession.isAuthenticated && !isAuthPage) {
+      router.replace('/login');
+    }
+  }, [isLoaded, authSession.isAuthenticated, isAuthPage, router]);
+
   if (isAuthPage) {
     return (
       <div className="min-h-screen bg-[#0B0F19] text-white">
@@ -81,8 +89,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // UI-level route guard.
-  // Note: Real security requires backend authentication with verified session tokens and secure HttpOnly cookies.
+  // Show quick loading screen while session is being verified from storage/backend
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 via-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-xl shadow-rose-500/20 animate-pulse mb-3">
+          <Shirt className="w-6 h-6" />
+        </div>
+        <span className="text-xs text-neutral-400 font-medium">Verifying Session...</span>
+      </div>
+    );
+  }
+
+  // UI-level route guard
   if (!authSession.isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
@@ -113,16 +132,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             <button
-              onClick={() => login('elena@collectionitall.com', 'demo', true)}
+              type="button"
+              onClick={() => login('elena@collectionitall.com', 'password123', true)}
               className="w-full py-3 rounded-2xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-semibold text-xs transition cursor-pointer"
             >
               Continue with 1-Click Demo Session
             </button>
           </div>
-
-          <p className="text-[10px] text-neutral-500">
-            🔒 Note: Authentication is simulated for frontend demonstration.
-          </p>
         </div>
 
         {activeToast && <Toast message={activeToast} />}
@@ -232,7 +248,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    setMobileMenuOpen(false);
+    router.replace('/login');
   };
 
   return (
@@ -383,22 +400,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* MAIN CONTENT WRAPPER */}
       <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
         {/* TOP NAVIGATION BAR */}
-        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-neutral-200/80 px-4 md:px-8 py-3.5 transition-all">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            {/* Mobile Brand / Menu Toggle */}
-            <div className="flex items-center gap-3 md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-xl border border-neutral-200 text-neutral-700 hover:bg-neutral-100 transition cursor-pointer"
-                aria-label="Toggle Navigation"
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-neutral-200/80 px-4 md:px-8 py-3 transition-all">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+            {/* Mobile Brand */}
+            <div className="flex items-center gap-2.5 md:hidden">
               <Link href="/home" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-center text-white">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-xs">
                   <Shirt className="w-4 h-4" />
                 </div>
-                <span className="font-serif font-bold text-lg tracking-tight">Collection It All</span>
+                <span className="font-serif font-bold text-base tracking-tight text-neutral-900">Collection It All</span>
               </Link>
             </div>
 
@@ -522,52 +532,96 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className="w-9 h-9 rounded-full object-cover border-2 border-neutral-200 hover:border-rose-500 transition shadow-sm"
                 />
               </Link>
+
+              {/* Upper-right Mobile Hamburger Menu button */}
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
+                className="md:hidden p-2 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-800 hover:bg-neutral-100 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation cursor-pointer active:scale-95 transition"
+                aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-5 h-5 text-rose-500" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
         </header>
 
         {/* MOBILE DRAWER MENU */}
         {mobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-[60px] z-40 bg-[#0B0F19] text-white p-6 overflow-y-auto animate-in slide-in-from-top-4 duration-200">
-            <div className="space-y-1.5">
-              {navLinks.map((link) => {
-                const isActive =
-                  pathname === link.href || (link.href === '/home' && pathname === '/');
-                const Icon = link.icon;
+          <div className="md:hidden fixed inset-0 z-50 bg-[#0B0F19]/98 backdrop-blur-2xl text-white p-6 overflow-y-auto flex flex-col justify-between animate-in fade-in duration-200">
+            <div>
+              {/* Drawer Top Header */}
+              <div className="flex items-center justify-between pb-5 border-b border-neutral-800 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center font-serif text-white font-black text-sm shadow-md">
+                    C
+                  </div>
+                  <div>
+                    <span className="font-serif font-bold text-sm tracking-wide block">Collection It All</span>
+                    <span className="text-[10px] text-neutral-400">Wardrobe Atelier</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2.5 rounded-xl bg-neutral-800/80 text-neutral-300 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation cursor-pointer active:scale-95"
+                  aria-label="Close Menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`flex items-center justify-between p-3 rounded-xl text-xs font-medium transition ${
-                      isActive
-                        ? `bg-gradient-to-r ${link.activeGradient} text-white`
-                        : link.highlight
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                        : 'text-neutral-300 hover:bg-neutral-900'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon className="w-4 h-4" />
-                      <span>{link.label}</span>
-                    </div>
-                    {link.badge && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20">
-                        {link.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+              {/* Navigation Links */}
+              <div className="space-y-2">
+                {navLinks.map((link) => {
+                  const isActive =
+                    pathname === link.href || (link.href === '/home' && pathname === '/');
+                  const Icon = link.icon;
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between p-3.5 rounded-2xl text-xs font-semibold min-h-[44px] transition touch-manipulation ${
+                        isActive
+                          ? `bg-gradient-to-r ${link.activeGradient} text-white shadow-lg`
+                          : link.highlight
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                          : 'text-neutral-300 hover:bg-neutral-900 active:bg-neutral-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4" />
+                        <span>{link.label}</span>
+                      </div>
+                      {link.badge && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20">
+                          {link.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-neutral-800 flex items-center justify-between">
-              <Link href="/profile" className="flex items-center gap-3">
+            {/* Drawer Footer with Profile & Logout */}
+            <div className="mt-8 pt-6 border-t border-neutral-800 flex items-center justify-between">
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 touch-manipulation min-h-[44px]"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={userProfile.avatarUrl}
                   alt={userProfile.name}
-                  className="w-10 h-10 rounded-full object-cover"
+                  className="w-10 h-10 rounded-full object-cover border border-neutral-700"
                 />
                 <div>
                   <div className="text-xs font-semibold">{userProfile.name}</div>
@@ -575,8 +629,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </Link>
               <button
-                onClick={handleLogout}
-                className="px-3.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-semibold cursor-pointer"
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-semibold cursor-pointer min-h-[44px] touch-manipulation active:scale-95 transition"
               >
                 Sign Out
               </button>

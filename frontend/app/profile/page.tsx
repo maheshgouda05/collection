@@ -46,6 +46,21 @@ export default function ProfilePage() {
     bodyProfile.unitSystem || 'metric'
   );
   const [avatarUrl, setAvatarUrl] = useState(userProfile.avatarUrl);
+  const [isSaving, setIsSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Sync state if userProfile updates from backend hydration
+  React.useEffect(() => {
+    setName(userProfile.name);
+    setEmail(userProfile.email);
+    setStylePersona(userProfile.stylePersona);
+    setTopSize(userProfile.sizes.tops);
+    setBottomSize(userProfile.sizes.bottoms);
+    setShoeSize(userProfile.sizes.footwear);
+    setOuterwearSize(userProfile.sizes.outerwear);
+    setFitPreference(userProfile.fitPreference);
+    setAvatarUrl(userProfile.avatarUrl);
+  }, [userProfile]);
 
   const totalValue = items.reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalWears = items.reduce((acc, curr) => acc + curr.timesWorn, 0);
@@ -66,32 +81,53 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile({
-      name,
-      email,
-      avatarUrl,
-      stylePersona,
-      location: userProfile.location,
-      sizes: {
-        tops: topSize,
-        bottoms: bottomSize,
-        footwear: shoeSize,
-        outerwear: outerwearSize,
-      },
-      fitPreference,
-    });
-    updateBodyProfile({
-      unitSystem,
-      usualSizes: {
-        tops: topSize,
-        bottoms: bottomSize,
-        footwear: shoeSize,
-        outerwear: outerwearSize,
-      },
-    });
-    showToast('Profile & Style Settings Saved Successfully');
+    setIsSaving(true);
+    setStatusMessage(null);
+    try {
+      const res = await updateProfile({
+        name,
+        email,
+        avatarUrl,
+        stylePersona,
+        location: userProfile.location,
+        sizes: {
+          tops: topSize,
+          bottoms: bottomSize,
+          footwear: shoeSize,
+          outerwear: outerwearSize,
+        },
+        fitPreference,
+      });
+      await updateBodyProfile({
+        unitSystem,
+        usualSizes: {
+          tops: topSize,
+          bottoms: bottomSize,
+          footwear: shoeSize,
+          outerwear: outerwearSize,
+        },
+      });
+
+      if (res && 'error' in res && res.error) {
+        setStatusMessage({ type: 'error', text: res.error });
+        showToast(res.error);
+      } else {
+        const msg =
+          res && 'message' in res && res.message
+            ? res.message
+            : 'Profile & style preferences saved successfully!';
+        setStatusMessage({ type: 'success', text: msg });
+        showToast(msg);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save profile';
+      setStatusMessage({ type: 'error', text: msg });
+      showToast(msg);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogout = () => {
@@ -367,15 +403,37 @@ export default function ProfilePage() {
             </select>
           </div>
 
-          <div className="pt-4 flex items-center justify-between border-t border-neutral-100">
+          {statusMessage && (
+            <div
+              className={`p-3.5 rounded-2xl text-xs flex items-center gap-2.5 transition animate-in fade-in duration-200 ${
+                statusMessage.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-800 border border-rose-200'
+              }`}
+            >
+              {statusMessage.type === 'success' ? (
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <Shield className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <span className="font-medium">{statusMessage.text}</span>
+            </div>
+          )}
+
+          <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-neutral-100">
             <p className="text-[11px] text-neutral-400">
               Settings automatically adjust styling recommendations across Smart Matcher and AI Assistant.
             </p>
             <button
               type="submit"
-              className="px-6 py-3 rounded-2xl bg-neutral-900 hover:bg-black text-white text-xs font-bold transition hover:scale-105 active:scale-95 cursor-pointer shadow-md"
+              disabled={isSaving}
+              className={`px-6 py-3 rounded-2xl text-white text-xs font-bold transition min-h-[44px] cursor-pointer shadow-md flex items-center justify-center gap-2 ${
+                isSaving
+                  ? 'bg-neutral-600 cursor-not-allowed'
+                  : 'bg-neutral-900 hover:bg-black hover:scale-105 active:scale-95'
+              }`}
             >
-              Save Profile Preferences
+              {isSaving ? 'Saving to Server...' : 'Save Profile Preferences'}
             </button>
           </div>
         </form>

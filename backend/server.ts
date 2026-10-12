@@ -184,20 +184,25 @@ app.post('/api/auth/register', (req: Request, res: Response): void => {
 });
 
 const loginSchema = z.object({
-  identifier: z.string().min(1, 'Email or username is required'),
+  identifier: z.string().optional(),
+  email: z.string().optional(),
+  username: z.string().optional(),
   password: z.string().min(1, 'Password is required'),
+}).refine(data => !!(data.identifier || data.email || data.username), {
+  message: 'Email or username is required',
 });
 
 app.post('/api/auth/login', (req: Request, res: Response): void => {
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: 'Identifier and password are required' });
+      res.status(400).json({ error: 'Email or username and password are required' });
       return;
     }
-    const { identifier, password } = parsed.data;
+    const { identifier, email, username, password } = parsed.data;
+    const loginId = (identifier || email || username || '').trim();
     const db = loadDb();
-    const searchId = identifier.trim().toLowerCase();
+    const searchId = loginId.toLowerCase();
 
     const user = db.users.find(
       u => u.email.toLowerCase() === searchId || u.username.toLowerCase() === searchId
@@ -302,6 +307,8 @@ app.put('/api/model', requireAuth, (req: AuthenticatedRequest, res: Response): v
 // ==============================================================================
 
 const wardrobeItemSchema = z.object({
+  id: z.string().optional(),
+  itemCode: z.string().optional(),
   name: z.string().min(1, 'Item name is required'),
   category: z.enum(['dresses', 'tops', 'bottoms', 'outerwear', 'shoes', 'accessories', 'bags']),
   colour: z.string().default('Neutral'),
@@ -453,8 +460,9 @@ app.post('/api/wardrobe', requireAuth, (req: AuthenticatedRequest, res: Response
     }
     const item = dbService.addWardrobeItem(req.user!.id, {
       ...parsed.data,
+      id: parsed.data.id || (typeof req.body.id === 'string' ? req.body.id : undefined),
       price: parsed.data.price ? Number(parsed.data.price) : undefined,
-      itemCode: generateItemCode(),
+      itemCode: parsed.data.itemCode || (typeof req.body.itemCode === 'string' ? req.body.itemCode : generateItemCode()),
     });
     res.status(201).json({ item, message: 'Garment added to wardrobe successfully' });
   } catch (err) {
@@ -980,7 +988,7 @@ app.post('/api/shopping/check', requireAuth, async (req: AuthenticatedRequest, r
   }
 
   // Gemini enhancement if available
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.GOOGLE_API_KEY;
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({
@@ -994,7 +1002,7 @@ Duplicates found: ${exactColourDuplicates.map(i => i.name).join(', ') || 'none'}
 In 2 concise, stylish sentences, give direct buying advice on whether this enhances versatility or adds closet clutter.`;
 
       const aiResponse = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
       });
 
@@ -1140,13 +1148,13 @@ app.post('/api/ai/assistant', requireAuth, async (req: AuthenticatedRequest, res
     season: item.season,
   }));
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
     // Graceful offline assistant fallback when API key is not yet set
     const fallbackReply = `Hello ${profile?.fullName || 'there'}! I am your Ward Room Stylist. You currently have ${userItems.length} items in your wardrobe.\n\n` +
       (userItems.length > 0 
-        ? `Here are some ideas: For ${occasion || 'today'}, I recommend styling your ${userItems[0].name} (${userItems[0].category}) with complimentary colors. To enable full AI deep reasoning, configure your GEMINI_API_KEY in the Settings > Secrets panel.`
+        ? `Here are some ideas: For ${occasion || 'today'}, I recommend styling your ${userItems[0].name} (${userItems[0].category}) with complimentary colors. To enable full AI deep reasoning, configure your GEMINI_API_KEY in your environment.`
         : `To get personalized outfit combinations, begin by adding your dresses, tops, bottoms, and shoes in the Add Dress section!`);
 
     const assistantMsg = dbService.addMessage(activeConvId, 'assistant', fallbackReply);
@@ -1189,7 +1197,7 @@ ${weatherCity ? `Current Location/City: ${weatherCity}` : ''}
 `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: promptContext,
       config: {
         systemInstruction,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWardrobe } from '@/lib/wardrobeContext';
@@ -8,14 +8,21 @@ import { Shirt, Eye, EyeOff, KeyRound, Sparkles, AlertCircle, CheckCircle2, X } 
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, requestPasswordReset, showToast } = useWardrobe();
+  const { login, requestPasswordReset, showToast, authSession, isLoaded } = useWardrobe();
 
   const [emailOrUsername, setEmailOrUsername] = useState('elena@collectionitall.com');
-  const [password, setPassword] = useState('Fashionista2026!');
+  const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // If already authenticated, redirect to /home immediately
+  useEffect(() => {
+    if (isLoaded && authSession.isAuthenticated) {
+      router.replace('/home');
+    }
+  }, [isLoaded, authSession.isAuthenticated, router]);
 
   // Forgot Password modal state
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
@@ -54,7 +61,7 @@ export default function LoginPage() {
 
   const handleDemoAccess = async () => {
     setLoading(true);
-    const res = await login('elena@collectionitall.com', 'demo-password', true);
+    const res = await login('elena@collectionitall.com', 'password123', true);
     setLoading(false);
     if (res.success) {
       router.push('/home');

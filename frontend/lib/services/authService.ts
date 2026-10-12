@@ -224,6 +224,8 @@ export const authService = {
     }
     if (typeof window !== 'undefined') {
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem('collection_it_all_auth_session');
+      localStorage.removeItem('collection_it_all_auth_session_v2');
     }
   },
 

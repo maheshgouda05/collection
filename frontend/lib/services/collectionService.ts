@@ -233,6 +233,8 @@ export const collectionService = {
       const res = await apiFetch<{ item: RawBackendItem }>('/api/wardrobe', {
         method: 'POST',
         body: JSON.stringify({
+          id: itemData.id,
+          itemCode: itemData.id,
           name: fallbackName,
           category: backendCat,
           colour: itemData.colour || 'Neutral',

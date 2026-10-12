@@ -1,4 +1,4 @@
-import { BodyProfile } from '../types';
+import { BodyProfile, BodyShape, ModelPresetType, SkinToneKey, FaceShape, HairStyle } from '../types';
 import {
   INITIAL_BODY_PROFILE,
   DEFAULT_BODY_3D_PARAMS,
@@ -39,7 +39,7 @@ function mapBackendToFrontendModel(bp: RawBackendBodyProfile): BodyProfile {
     ...extra,
     height: bp.heightCm || bp.height || INITIAL_BODY_PROFILE.height,
     weight: bp.weightKg || bp.weight || INITIAL_BODY_PROFILE.weight,
-    bodyType: bp.bodyType || INITIAL_BODY_PROFILE.bodyType,
+    bodyType: (bp.bodyType as BodyShape) || INITIAL_BODY_PROFILE.bodyType,
     shouldersCm: bp.shoulderCm || bp.shouldersCm || INITIAL_BODY_PROFILE.shouldersCm,
     chestCm: bp.chestCm || INITIAL_BODY_PROFILE.chestCm,
     bicepsCm: bp.bicepsCm || INITIAL_BODY_PROFILE.bicepsCm,
@@ -47,26 +47,26 @@ function mapBackendToFrontendModel(bp: RawBackendBodyProfile): BodyProfile {
     waistCm: bp.waistCm || INITIAL_BODY_PROFILE.waistCm,
     hipsCm: bp.hipsCm || INITIAL_BODY_PROFILE.hipsCm,
     inseamCm: bp.inseamCm || INITIAL_BODY_PROFILE.inseamCm,
-    modelPreset: bp.modelPreset || INITIAL_BODY_PROFILE.modelPreset,
+    modelPreset: (bp.modelPreset as ModelPresetType) || INITIAL_BODY_PROFILE.modelPreset,
     appearance: {
       ...INITIAL_BODY_PROFILE.appearance,
       ...(extra.appearance || {}),
-      skinTone: bp.skinTone || INITIAL_BODY_PROFILE.appearance.skinTone,
-      faceShape: bp.faceStructure || INITIAL_BODY_PROFILE.appearance.faceShape,
-      hairstyle: bp.hairstyle || INITIAL_BODY_PROFILE.appearance.hairstyle,
+      skinTone: (bp.skinTone as SkinToneKey) || INITIAL_BODY_PROFILE.appearance.skinTone,
+      faceShape: (bp.faceStructure as FaceShape) || INITIAL_BODY_PROFILE.appearance.faceShape,
+      hairstyle: (bp.hairstyle as HairStyle) || INITIAL_BODY_PROFILE.appearance.hairstyle,
     },
     body3D: {
       ...DEFAULT_BODY_3D_PARAMS,
       ...(extra.body3D || {}),
       heightCm: bp.heightCm || DEFAULT_BODY_3D_PARAMS.heightCm,
       weightKg: bp.weightKg || DEFAULT_BODY_3D_PARAMS.weightKg,
-      modelPreset: bp.modelPreset || DEFAULT_BODY_3D_PARAMS.modelPreset,
+      modelPreset: (bp.modelPreset as ModelPresetType) || DEFAULT_BODY_3D_PARAMS.modelPreset,
     },
     appearance3D: {
       ...DEFAULT_APPEARANCE_3D_PARAMS,
       ...(extra.appearance3D || {}),
-      skinTone: bp.skinTone || DEFAULT_APPEARANCE_3D_PARAMS.skinTone,
-      hairstyle: bp.hairstyle || DEFAULT_APPEARANCE_3D_PARAMS.hairstyle,
+      skinTone: (bp.skinTone as SkinToneKey) || DEFAULT_APPEARANCE_3D_PARAMS.skinTone,
+      hairstyle: (bp.hairstyle as HairStyle) || DEFAULT_APPEARANCE_3D_PARAMS.hairstyle,
     },
     usualSizes: {
       ...INITIAL_BODY_PROFILE.usualSizes,
