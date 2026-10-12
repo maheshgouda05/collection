@@ -1,2 +1,2 @@
 # collection
-# hi, hello every one
+# Hi, hello every one
