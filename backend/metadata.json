@@ -1,0 +1,6 @@
+{
+  "name": "Collection It All - Ward Room",
+  "description": "Smart wardrobe management, 3D body model preview, outfit planner, weather-based styling, and AI stylist assistant backed by database and Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

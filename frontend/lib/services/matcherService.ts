@@ -1,4 +1,5 @@
 import { Outfit, WardrobeItem, Occasion } from '../types';
+import { apiFetch } from './apiClient';
 
 const SAVED_OUTFITS_KEY = 'collection_it_all_outfits_v2';
 
@@ -205,10 +206,44 @@ export const matcherService = {
   },
 
   /**
-   * Retrieves saved favourite outfits from local storage.
-   * // TODO: connect backend (e.g., GET /api/stylist/favourites)
+   * Retrieves saved favourite outfits from backend /api/outfits with local caching.
    */
   listFavourites: async (): Promise<Outfit[]> => {
+    try {
+      interface RawBackendOutfit {
+        id: string;
+        name: string;
+        occasion?: string;
+        matchScore?: number;
+        explanation?: string;
+        createdAt?: string;
+        weatherContext?: string;
+      }
+      const res = await apiFetch<{ outfits: RawBackendOutfit[] }>('/api/outfits');
+      if (res.ok && res.data?.outfits && Array.isArray(res.data.outfits)) {
+        const outfits: Outfit[] = res.data.outfits.map((o) => ({
+          id: o.id,
+          name: o.name,
+          occasion: (o.occasion || 'Office') as Occasion,
+          stylePersona: 'Curated Look',
+          matchScore: o.matchScore || 85,
+          matchReason: o.explanation || 'Curated wardrobe combination.',
+          createdAt: o.createdAt || new Date().toISOString(),
+          weatherFit: o.weatherContext,
+        }));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(SAVED_OUTFITS_KEY, JSON.stringify(outfits));
+          } catch (e) {
+            console.warn('Error saving outfits to localStorage:', e);
+          }
+        }
+        return outfits;
+      }
+    } catch (e) {
+      console.warn('Backend /api/outfits call failed, using localStorage:', e);
+    }
+
     if (typeof window === 'undefined') return [];
     try {
       const stored = localStorage.getItem(SAVED_OUTFITS_KEY);
@@ -220,10 +255,35 @@ export const matcherService = {
   },
 
   /**
-   * Saves an outfit to favourites.
-   * // TODO: connect backend (e.g., POST /api/stylist/favourites)
+   * Saves an outfit to backend /api/outfits and local favourites.
    */
   saveFavourite: async (outfit: Outfit): Promise<Outfit[]> => {
+    try {
+      const itemIds = [
+        outfit.topItem?.id,
+        outfit.bottomItem?.id,
+        outfit.dressItem?.id,
+        outfit.outerwearItem?.id,
+        outfit.footwearItem?.id,
+        outfit.bagItem?.id,
+        outfit.accessoryItem?.id,
+      ].filter(Boolean) as string[];
+
+      await apiFetch('/api/outfits', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: outfit.name,
+          occasion: outfit.occasion,
+          itemIds,
+          matchScore: outfit.matchScore,
+          explanation: outfit.matchReason,
+          weatherContext: outfit.weatherFit,
+        }),
+      });
+    } catch (e) {
+      console.warn('Backend /api/outfits save call failed:', e);
+    }
+
     const favourites = await matcherService.listFavourites();
     const exists = favourites.some((o) => o.id === outfit.id);
     const updated = exists ? favourites : [outfit, ...favourites];
@@ -239,10 +299,15 @@ export const matcherService = {
   },
 
   /**
-   * Removes an outfit from favourites.
-   * // TODO: connect backend (e.g., DELETE /api/stylist/favourites/:id)
+   * Removes an outfit from backend /api/outfits/:id and local favourites.
    */
   removeFavourite: async (id: string): Promise<Outfit[]> => {
+    try {
+      await apiFetch(`/api/outfits/${id}`, { method: 'DELETE' });
+    } catch (e) {
+      console.warn('Backend /api/outfits delete call failed:', e);
+    }
+
     const favourites = await matcherService.listFavourites();
     const updated = favourites.filter((o) => o.id !== id);
 

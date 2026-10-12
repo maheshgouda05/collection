@@ -6,3 +6,4 @@ export * from './weatherService';
 export * from './shoppingService';
 export * from './assistantService';
 export * from './tryOnService';
+export * from './apiClient';

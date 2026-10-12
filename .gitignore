@@ -5,9 +5,12 @@ node_modules/
 
 # Production & Build outputs
 .next/
+.next.nosync/
 out/
 build/
 dist/
+backend/data/
+collection-it-all---ward-room
 
 # Logs
 npm-debug.log*

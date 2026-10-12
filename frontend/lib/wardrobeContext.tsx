@@ -17,6 +17,7 @@ import { INITIAL_BODY_PROFILE, INITIAL_AUTH_SESSION } from './mock/bodyProfile';
 import { authService } from './services/authService';
 import { modelService } from './services/modelService';
 import { matcherService } from './services/matcherService';
+import { collectionService } from './services/collectionService';
 
 interface WardrobeContextType {
   items: WardrobeItem[];
@@ -103,6 +104,25 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoaded(true);
     }
+
+    // Live backend synchronization
+    collectionService.list().then((serverItems) => {
+      if (serverItems && serverItems.length > 0) {
+        setItems(serverItems);
+      }
+    }).catch((e) => console.warn('Server item sync error:', e));
+
+    modelService.getBodyProfile().then((serverModel) => {
+      if (serverModel) {
+        setBodyProfile(serverModel);
+      }
+    }).catch((e) => console.warn('Server model sync error:', e));
+
+    matcherService.listFavourites().then((serverLooks) => {
+      if (serverLooks && serverLooks.length > 0) {
+        setSavedOutfits(serverLooks);
+      }
+    }).catch((e) => console.warn('Server outfits sync error:', e));
   }, []);
 
   const showToast = useCallback((msg: string) => {
@@ -276,18 +296,21 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
 
     setItems((prev) => [newItem, ...prev]);
     showToast(`Added "${newItem.name}" to your collection!`);
+    collectionService.create(newItem).catch((e) => console.warn('Backend item save error:', e));
     return newItem;
   };
 
   const updateItem = (updated: WardrobeItem) => {
     setItems((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
     showToast(`Updated "${updated.name}"`);
+    collectionService.update(updated.id, updated).catch((e) => console.warn('Backend item update error:', e));
   };
 
   const deleteItem = (id: string) => {
     const itemToDelete = items.find((i) => i.id === id);
     setItems((prev) => prev.filter((item) => item.id !== id));
     showToast(`Removed "${itemToDelete?.name || 'Item'}" from collection`);
+    collectionService.delete(id).catch((e) => console.warn('Backend item delete error:', e));
   };
 
   const toggleFavorite = (id: string) => {
@@ -301,6 +324,7 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
         return item;
       })
     );
+    collectionService.toggleFavorite(id).catch((e) => console.warn('Backend toggle error:', e));
   };
 
   const saveOutfit = (outfit: Outfit) => {
@@ -312,11 +336,13 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
       showToast(`Outfit "${outfit.name}" saved to your lookbook!`);
       return [outfit, ...prev];
     });
+    matcherService.saveFavourite(outfit).catch((e) => console.warn('Backend outfit save error:', e));
   };
 
   const deleteOutfit = (id: string) => {
     setSavedOutfits((prev) => prev.filter((o) => o.id !== id));
     showToast('Outfit removed from saved looks');
+    matcherService.removeFavourite(id).catch((e) => console.warn('Backend outfit delete error:', e));
   };
 
   const updateProfile = (profileUpdate: Partial<UserProfile>) => {

@@ -1,5 +1,6 @@
 import { ShopItem, Category, WardrobeItem } from '../types';
 import { SAMPLE_SHOPPING_ITEMS } from '../mock/shopItems';
+import { apiFetch } from './apiClient';
 
 export interface ShoppingFilterOptions {
   category?: Category | 'All';
@@ -8,23 +9,65 @@ export interface ShoppingFilterOptions {
   style?: string;
 }
 
+function mapToBackendCategory(cat: string): string {
+  const c = (cat || '').toLowerCase();
+  if (c.includes('footwear') || c.includes('shoe')) return 'shoes';
+  if (c.includes('dress')) return 'dresses';
+  if (c.includes('top')) return 'tops';
+  if (c.includes('bottom') || c.includes('pant') || c.includes('skirt') || c.includes('trouser')) return 'bottoms';
+  if (c.includes('outer') || c.includes('coat') || c.includes('jacket') || c.includes('blazer')) return 'outerwear';
+  if (c.includes('bag')) return 'bags';
+  return 'accessories';
+}
+
 /**
- * shoppingService handles curated sample recommendation items that fill detected
- * wardrobe gaps, helping users avoid redundant purchases and buy only what pairs
- * with their existing wardrobe.
+ * shoppingService handles curated recommendation items and connects to the backend
+ * /api/shopping/check endpoint for real closet redundancy checks and gap detection.
  */
 export const shoppingService = {
   /**
+   * Evaluates a potential purchase candidate against user's real wardrobe via /api/shopping/check.
+   */
+  checkCandidateItem: async (candidate: {
+    name: string;
+    category: string;
+    colour: string;
+    brand?: string;
+    fabric?: string;
+    price?: number;
+    imageUrl?: string;
+  }) => {
+    try {
+      const res = await apiFetch<Record<string, unknown>>('/api/shopping/check', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: candidate.name,
+          category: mapToBackendCategory(candidate.category),
+          colour: candidate.colour,
+          brand: candidate.brand,
+          fabric: candidate.fabric,
+          price: candidate.price,
+          imageUrl: candidate.imageUrl,
+        }),
+      });
+      if (res.ok && res.data) {
+        return res.data;
+      }
+    } catch (e) {
+      console.warn('Backend /api/shopping/check call failed:', e);
+    }
+    return null;
+  },
+
+  /**
    * Retrieves sample products that complete the user's existing wardrobe.
-   * // TODO: connect backend (e.g., GET /api/affiliate/shop-matching?category=...)
    */
   getMatchingItemsForGap: async (
     gapCategory?: string,
     existingItems: WardrobeItem[] = [],
     filters?: ShoppingFilterOptions
   ): Promise<ShopItem[]> => {
-    // Artificial latency simulation
-    await new Promise((res) => setTimeout(res, 200));
+    await new Promise((res) => setTimeout(res, 150));
 
     let items = [...SAMPLE_SHOPPING_ITEMS];
 
@@ -51,7 +94,6 @@ export const shoppingService = {
       }
     }
 
-    // Enhance match reasons dynamically based on user's actual items if available
     return items.map((item) => {
       const matchingExisting = existingItems.find(
         (e) => e.category !== item.category && (e.colour.includes('White') || e.colour.includes('Black') || e.isFavorite)
@@ -80,6 +122,6 @@ export const shoppingService = {
       }
     });
 
-    return missing.length > 0 ? missing : ['Footwear', 'Accessories']; // sensible defaults if capsule is full
+    return missing.length > 0 ? missing : ['Footwear', 'Accessories'];
   },
 };
